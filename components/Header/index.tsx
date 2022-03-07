@@ -8,13 +8,21 @@ import {
   MenuIcon,
   HomeIcon,
 } from '@heroicons/react/outline'
+import { signIn, signOut, useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
 
 const Header = () => {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
   return (
     <div className="sticky top-0 z-50 border-b bg-white shadow-sm">
       <div className="mx-5 flex max-w-6xl justify-between lg:mx-auto">
         {/* left */}
-        <div className="relative hidden w-24 cursor-pointer lg:inline-grid">
+        <div
+          onClick={() => router.push('/')}
+          className="relative hidden w-24 cursor-pointer lg:inline-grid"
+        >
           <Image
             src="https://links.papareact.com/ocw"
             layout="fill"
@@ -22,7 +30,10 @@ const Header = () => {
           />
         </div>
 
-        <div className="relative w-10 flex-shrink-0 cursor-pointer lg:hidden">
+        <div
+          onClick={() => router.push('/')}
+          className="relative w-10 flex-shrink-0 cursor-pointer lg:hidden"
+        >
           <Image
             src="https://links.papareact.com/jjm"
             layout="fill"
@@ -46,22 +57,30 @@ const Header = () => {
 
         {/* Right */}
         <div className="flex items-center justify-end space-x-4">
-          <HomeIcon className="navBtn" />
+          <HomeIcon onClick={() => router.push('/')} className="navBtn" />
           <MenuIcon className="h-6 cursor-pointer md:hidden" />
-          <div className="navBtn relative">
-            <PaperAirplaneIcon className="navBtn rotate-45" />
-            <div className="absolute -top-1 -right-2 flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
-              3
-            </div>
-          </div>
-          <PlusCircleIcon className="navBtn" />
-          <UserGroupIcon className="navBtn" />
-          <HeartIcon className="navBtn" />
-          <img
-            src="https://pbs.twimg.com/media/FDBAdTvXsAA5BAy?format=jpg&name=large"
-            alt="profile pic"
-            className="h-10 cursor-pointer rounded-full"
-          />
+
+          {session ? (
+            <>
+              <div className="navBtn relative">
+                <PaperAirplaneIcon className="navBtn rotate-45" />
+                <div className="absolute -top-1 -right-2 flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+                  3
+                </div>
+              </div>
+              <PlusCircleIcon className="navBtn" />
+              <UserGroupIcon className="navBtn" />
+              <HeartIcon className="navBtn" />
+              <img
+                onClick={() => signOut()}
+                src={session?.user?.image as string}
+                alt="profile pic"
+                className="h-10 cursor-pointer rounded-full"
+              />
+            </>
+          ) : (
+            <button onClick={() => signIn()}>Sign In</button>
+          )}
         </div>
       </div>
     </div>
