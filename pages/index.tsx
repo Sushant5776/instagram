@@ -1,5 +1,6 @@
 import Feed from '@/components/Feed'
 import Header from '@/components/Header'
+import Modal from '@/components/Modal'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 // import Image from 'next/image'
@@ -16,6 +17,7 @@ const Home: NextPage = () => {
       {/* Feed */}
       <Feed />
       {/* Modal */}
+      <Modal />
     </div>
   )
 }
