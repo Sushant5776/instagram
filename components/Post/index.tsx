@@ -16,6 +16,9 @@ import {
   query,
   serverTimestamp,
   DocumentData,
+  setDoc,
+  doc,
+  deleteDoc,
 } from 'firebase/firestore'
 import { db } from '../../firebaseApp'
 import { useSession } from 'next-auth/react'
@@ -40,6 +43,10 @@ const Post = ({
   const [comments, setComments] = useState<
     QueryDocumentSnapshot<DocumentData>[] | []
   >([])
+  const [likes, setLikes] = useState<
+    QueryDocumentSnapshot<DocumentData>[] | []
+  >([])
+  const [hasLiked, setHasLiked] = useState(false)
 
   const sendComment = async (event: MouseEvent) => {
     event.preventDefault()
@@ -53,6 +60,21 @@ const Post = ({
     })
   }
 
+  const likePost = async () => {
+    if (hasLiked) {
+      await deleteDoc(
+        doc(db, 'posts', id, 'likes', session?.user?.uid as string)
+      )
+    } else {
+      await setDoc(
+        doc(db, 'posts', id, 'likes', session?.user?.uid as string),
+        {
+          username: session?.user?.username,
+        }
+      )
+    }
+  }
+
   useEffect(
     () =>
       onSnapshot(
@@ -62,7 +84,23 @@ const Post = ({
         ),
         (snapshot) => setComments(snapshot.docs)
       ),
-    [db]
+    [db, id]
+  )
+
+  useEffect(
+    () =>
+      onSnapshot(collection(db, 'posts', id, 'likes'), (snapshot) =>
+        setLikes(snapshot.docs)
+      ),
+    [db, id]
+  )
+
+  useEffect(
+    () =>
+      setHasLiked(
+        likes.findIndex((like) => like.id === session?.user?.uid) !== -1
+      ),
+    [likes]
   )
 
   return (
@@ -84,7 +122,14 @@ const Post = ({
       {session && (
         <div className="flex justify-between px-4 pt-4">
           <div className="flex space-x-4">
-            <HeartIcon className="btn" />
+            {hasLiked ? (
+              <HeartIconFilled
+                onClick={likePost}
+                className="btn text-red-500"
+              />
+            ) : (
+              <HeartIcon onClick={likePost} className="btn" />
+            )}
             <ChatIcon className="btn" />
             <PaperAirplaneIcon className="btn" />
           </div>
@@ -95,6 +140,9 @@ const Post = ({
 
       {/* Caption */}
       <p className="truncate p-5">
+        {likes.length > 0 && (
+          <p className="mb-1 font-bold">{likes.length} likes</p>
+        )}
         <span className="mr-1 font-bold">{username}</span> {caption}
       </p>
 
